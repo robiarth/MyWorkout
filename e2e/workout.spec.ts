@@ -47,6 +47,12 @@ test("modèle → séance → reprise IndexedDB → historique → progression",
       exact: true,
     })
     .click();
+  await expect(
+    page.getByRole("button", {
+      name: "Annuler série 1 Développé couché barre",
+      exact: true,
+    }),
+  ).toBeVisible();
   await page.reload();
   await expect(
     page.getByRole("button", {
