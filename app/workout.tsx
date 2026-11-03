@@ -29,7 +29,7 @@ import {
 } from "../src/ui";
 import { ExercisePicker } from "../src/exercise-picker";
 import { WorkoutExercise } from "../src/workout-exercise";
-import { scheduleRest } from "../src/notifications";
+import { scheduleRest as scheduleRestNotification } from "../src/notifications";
 
 function Results({ exercise }: { exercise: SessionExercise | undefined }) {
   return (
@@ -96,6 +96,11 @@ export default function Workout() {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  async function scheduleRest(end: number | null) {
+    const warning = await scheduleRestNotification(end);
+    if (warning) setMessage(warning);
+  }
 
   async function update(fn: (s: Session) => Session, remember = false) {
     if (!session) return;

@@ -8,9 +8,11 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
-export async function scheduleRest(end: number | null) {
-  await Notifications.cancelAllScheduledNotificationsAsync();
-  if (!end || end <= Date.now()) return;
+async function updateRestNotification(end: number | null) {
+  if (!end || end <= Date.now()) {
+    await Notifications.cancelScheduledNotificationAsync("workout-rest");
+    return;
+  }
   if (Platform.OS === "android")
     await Notifications.setNotificationChannelAsync("rest", {
       name: "Repos",
@@ -24,6 +26,8 @@ export async function scheduleRest(end: number | null) {
       "Notifications refusées : le minuteur reste visible dans la séance.",
     );
   await Notifications.scheduleNotificationAsync({
+    // Scheduling with the same identifier replaces the previous rest alert.
+    identifier: "workout-rest",
     content: {
       title: "Repos terminé",
       body: "Prêt pour la prochaine série ?",
@@ -35,4 +39,17 @@ export async function scheduleRest(end: number | null) {
       channelId: "rest",
     },
   });
+}
+
+// An optional native alert must never turn a saved workout action into a failure.
+export async function scheduleRest(end: number | null): Promise<string | null> {
+  try {
+    await updateRestNotification(end);
+    return null;
+  } catch (error) {
+    console.warn("Rest notification unavailable", error);
+    return end && end > Date.now()
+      ? "Alerte de repos indisponible : le minuteur reste actif dans la séance."
+      : "Impossible d’annuler l’alerte de repos sur cet appareil.";
+  }
 }
