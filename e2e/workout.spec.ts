@@ -5,6 +5,13 @@ test("modèle → séance → reprise IndexedDB → historique → progression",
 }, testInfo) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  page.on("console", (message) => {
+    if (
+      message.type() === "error" &&
+      !message.text().includes("net::ERR_INTERNET_DISCONNECTED")
+    )
+      errors.push(message.text());
+  });
   await page.goto("/");
   await page
     .getByRole("button", { name: "Démarrer une séance", exact: true })
@@ -65,6 +72,7 @@ test("modèle → séance → reprise IndexedDB → historique → progression",
     page.getByText("1 séance terminée", { exact: true }),
   ).toBeVisible();
   await context.setOffline(false);
+  await page.getByRole("button", { name: /Afficher le point 1/ }).click();
   await page.screenshot({
     path: testInfo.outputPath("dashboard.png"),
     fullPage: true,
