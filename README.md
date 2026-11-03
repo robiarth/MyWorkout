@@ -1,47 +1,73 @@
 # MyWorkout
 
-Application de suivi de musculation pour Android, iOS et le web, inspiree des usages de Liftoff. Projet en phase de cadrage : aucune application executable pour le moment.
+Carnet de musculation gratuit et sans publicité, en français et en kg. Application Expo commune à Android (prioritaire), iOS et web. Code public, entraînements privés, accès à la bêta sur invitation.
 
-## MVP
+## Démarrer
 
-- Creer des routines avec exercices et objectifs de series/repetitions.
-- Demarrer une seance et saisir poids, repetitions et effort ressenti (RPE facultatif).
-- Minuteur de repos, historique et consultation de la seance precedente.
-- Suivre la progression : records personnels et volume par exercice.
-- Enregistrer une seance hors ligne ; synchroniser entre appareils apres connexion.
-- Exporter ses donnees et supprimer son compte.
+Node 24 et npm sont nécessaires.
 
-## Technologies proposees
+```sh
+npm ci
+```
 
-| Besoin | Choix | Raison |
-| --- | --- | --- |
-| Android, iOS et web responsive | TypeScript, React Native, Expo, Expo Router, React Native Web | Partager les ecrans et la logique entre les trois plateformes |
-| Interface | Composants React Native et StyleSheet | Rester proche de la plateforme et limiter les dependances |
-| Comptes et donnees distantes | Supabase Auth et PostgreSQL | Authentification et stockage relationnel sans serveur applicatif sur mesure au depart |
-| Isolation des donnees | PostgreSQL Row Level Security | Autoriser chaque utilisateur a acceder uniquement a ses donnees |
-| Donnees locales | expo-sqlite sur mobile ; IndexedDB sur web | Conserver les seances hors ligne avec des adaptateurs propres a chaque plateforme |
-| Validation des entrees | Zod et contraintes PostgreSQL | Valider les saisies et proteger les invariants en base |
-| Tests | Jest / jest-expo, React Native Testing Library, Playwright pour le web | Tester les calculs, la saisie et les parcours essentiels |
-| Livraison | GitHub Actions, Expo EAS Build/Submit, hebergement web statique | Verifications automatiques et distribution sur les stores |
+Copier `.env.example` vers `.env` et renseigner les deux variables publiques Supabase. Puis :
 
-Ces technologies sont des choix de depart, pas des services deja configures. Les comptes Supabase, Expo et stores seront necessaires lors de la mise en service. Les builds iOS locaux necessitent macOS ; EAS permet des builds distants.
+```sh
+npm run web
+npm run android
+```
 
-## Organisation
+Sans Supabase, l’application affiche l’écran de configuration. Pour essayer le carnet **uniquement en développement**, mettre `EXPO_PUBLIC_LOCAL_DEMO=true` dans `.env`, sans URL ni clé Supabase, puis redémarrer Expo. Ce mode ne fonctionne pas dans un export de production et ses données sont séparées des comptes réels. Les votes et invitations nécessitent le serveur.
 
-Un seul depot public `MyWorkout` pour l'application universelle, les migrations Supabase et la documentation. Pas de depots distincts mobile/web/backend au depart : une modification fonctionnelle reste dans une seule pull request.
+## Fonctions
 
-Organisation cible lorsque l'implementation commence : `app/` pour les routes Expo, `src/` pour les composants et la logique, `supabase/migrations/` pour le schema et les politiques d'acces.
+- Modèles libres, exercices personnels, conventions de charge, échauffements et séries ajustables.
+- Validation en un appui, comparaison au même modèle et à la dernière réalisation d’un exercice, repos automatique désactivable, annulation et reprise de brouillon.
+- Reprise des résultats ou progression douce / standard / soutenue, réglage global et exceptions par exercice. Les objectifs manqués sont reconduits ; toutes les séries au plafond proposent un incrément puis le bas de la fenêtre.
+- Tableau de bord, favoris, historique corrigeable, charge maximale, charge à répétitions fixes et 1RM estimé distinct.
+- Sauvegarde locale SQLite / IndexedDB, synchronisation versionnée, conflits explicites et conservation des brouillons de plusieurs appareils.
+- Invitations de dix usages, un code par 24 h, validité sept jours ; exports JSON/CSV et suppression de compte.
+- Catalogue communautaire sur proposition, votes après 24 h, signalements et modération.
 
-## Regles de fonctionnement
+Le catalogue initial contient douze descriptions originales dans `src/catalog.ts`, sans médias ni base externe copiée. L’import d’une source tierce reste conditionné à la vérification de licence et d’attribution ; le catalogue original constitue le repli prévu. Les tractions lestées/assistées, objectifs datés, supersets structurés, séries dégressives et fonctions sociales sont différés.
 
-- Une routine est un modele ; modifier une routine ne modifie jamais les seances deja enregistrees.
-- Une serie conserve ses valeurs historiques et son ordre dans la seance. Les charges sont stockees dans une unite canonique et converties pour l'affichage kg/lb.
-- Une saisie est sauvegardee localement avant d'etre annoncee comme enregistree. Une erreur de synchronisation reste visible et ne supprime pas la copie locale.
-- Les identifiants stables rendent les nouvelles tentatives de synchronisation idempotentes. Les mises a jour utilisent une revision verifiee cote serveur ; un conflit ne doit pas ecraser silencieusement une seance.
-- Les donnees d'entrainement restent privees meme si le code est public. Aucun secret ni donnee personnelle ne doit etre commite. La cle Supabase service_role ne doit jamais etre embarquee dans un client.
+## Configurer Supabase
 
-## Premiere tranche a implementer
+Voir [le guide serveur](docs/server.md) pour les migrations, l’administrateur initial, les e-mails OTP, les tâches de publication, la fonction de suppression et les contrôles avant ouverture.
 
-Catalogue d'exercices initial, creation d'une routine, saisie et sauvegarde locale d'une seance, puis historique. Ajouter ensuite les comptes, les politiques d'acces et la synchronisation avec tests de perte de reseau et de conflits.
+Les seules variables embarquées sont l’URL et la clé **publique** Supabase. Ne jamais exposer une clé `service_role`. L’authentification seule ne donne pas accès aux données : il faut être membre actif. Les écritures sensibles passent exclusivement par les fonctions SQL ; les tables sont protégées par RLS.
 
-Le nom et les parcours sont propres au projet ; aucun code ou asset de Liftoff n'est inclus.
+## Vérifier
+
+```sh
+npm run typecheck
+npm test
+npm run build:web
+npx expo export --platform android --output-dir dist-android
+npx expo export --platform ios --output-dir dist-ios
+npx playwright install chromium
+npm run test:e2e
+npm run test:offline
+```
+
+Pour vérifier aussi le vrai parcours Auth / invitation / synchronisation / suppression, démarrer Supabase local avec le CLI officiel (`npx supabase start`), puis lancer `npm run test:cloud`. Le script refuse une URL distante, utilise le serveur e-mail local et supprime uniquement ses comptes jetables `@example.test`. Il ne journalise pas les clés de service.
+
+Les tests PostgreSQL créent puis suppriment leur propre base `myworkout_test_<timestamp>`, sans réinitialiser la base de connexion. Utiliser une instance locale jetable :
+
+```sh
+docker run --detach --rm --name myworkout-db-test --publish 127.0.0.1:54329:5432 --env POSTGRES_PASSWORD=myworkout-local-test postgres:17-alpine
+npm run test:db
+docker stop myworkout-db-test
+```
+
+`MW_TEST_DATABASE_URL` permet de choisir une autre instance de test. Le test couvre les dix activations concurrentes, expiration/révocation, limitation des tentatives, RLS, mutations idempotentes, conflits, votes, modération et anonymisation par suppression. Il utilise un schéma `auth` minimal ; `test:cloud` complète cette preuve avec les vrais services Supabase, e-mails et fonction Edge locaux.
+
+## Distribution et limites vérifiables
+
+- `npm run build:web` produit `dist/` et un service worker pour rouvrir le web hors ligne après son premier chargement complet. Héberger à la racine en HTTPS avec repli des routes vers `index.html`. Le cache ne contient que les fichiers de l’application ; les données privées restent dans IndexedDB.
+- `eas.json` prépare un APK interne. Les comptes Expo/stores, signatures, tests Android réels et tests iPhone sont requis avant distribution ; les exports JavaScript ne sont pas des APK/IPA ni des essais sur appareil.
+- Le repos web fonctionne dans la page. Les notifications mobiles nécessitent l’autorisation système et un build compatible ; elles restent à vérifier écran verrouillé et après redémarrage.
+- La publication communautaire est calculée côté serveur lors des consultations/votes ; activer la tâche périodique du guide pour une publication même sans visite.
+- Les dépendances Expo/Jest comportent des alertes npm indirectes de sévérité faible/modérée ; ne pas appliquer `npm audit fix --force`, qui propose une régression majeure d’Expo. Réévaluer avant distribution.
+
+Voir [le glossaire](CONTEXT.md) et les [décisions d’architecture](docs/adr/).
