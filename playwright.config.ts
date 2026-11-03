@@ -3,7 +3,9 @@ const cloud = process.env.MW_CLOUD_E2E === "true";
 const port = cloud ? 8086 : 8085;
 export default defineConfig({
   testDir: "e2e",
-  testMatch: cloud ? "cloud.spec.ts" : "workout.spec.ts",
+  testMatch: cloud
+    ? "cloud.spec.ts"
+    : ["workout.spec.ts", "workout-focus.spec.ts"],
   fullyParallel: false,
   use: { baseURL: `http://127.0.0.1:${port}`, ...devices["Pixel 7"] },
   webServer: {

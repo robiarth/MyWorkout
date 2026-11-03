@@ -6,6 +6,9 @@ import {
   Text,
   TextInput,
   View,
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
 } from "react-native";
 import { useStore } from "./store";
 export const colors = {
@@ -105,12 +108,18 @@ export function Button({
   secondary = false,
   disabled = false,
   danger = false,
+  text,
+  style,
+  textStyle,
 }: {
   label: string;
   onPress: () => void | Promise<unknown>;
   secondary?: boolean;
   disabled?: boolean;
   danger?: boolean;
+  text?: string;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 }) {
   const [busy, setBusy] = useState(false);
   const { setMessage } = useStore();
@@ -133,6 +142,7 @@ export function Button({
         styles.button,
         secondary && styles.secondary,
         { opacity: disabled || busy ? 0.5 : 1 },
+        style,
       ]}
     >
       <Text
@@ -140,9 +150,10 @@ export function Button({
           styles.buttonText,
           secondary && { color: colors.text },
           danger && { color: secondary ? colors.danger : "#7d1717" },
+          textStyle,
         ]}
       >
-        {busy ? "Patientez…" : label}
+        {busy ? (text ? "…" : "Patientez…") : (text ?? label)}
       </Text>
     </Pressable>
   );
@@ -154,6 +165,8 @@ export function Field({
   numeric = false,
   email = false,
   multiline = false,
+  hideLabel = false,
+  inputStyle,
 }: {
   label: string;
   value: string;
@@ -161,10 +174,12 @@ export function Field({
   numeric?: boolean;
   email?: boolean;
   multiline?: boolean;
+  hideLabel?: boolean;
+  inputStyle?: StyleProp<TextStyle>;
 }) {
   return (
     <View style={{ gap: 5, flexGrow: 1 }}>
-      <Text style={styles.muted}>{label}</Text>
+      {!hideLabel && <Text style={styles.muted}>{label}</Text>}
       <TextInput
         accessibilityLabel={label}
         value={value}
@@ -175,7 +190,7 @@ export function Field({
         autoCapitalize={numeric || email ? "none" : "sentences"}
         autoComplete={email ? "email" : undefined}
         multiline={multiline}
-        style={[styles.input, multiline && { minHeight: 90 }]}
+        style={[styles.input, multiline && { minHeight: 90 }, inputStyle]}
       />
     </View>
   );
@@ -184,10 +199,14 @@ export function NumberField({
   label,
   value,
   onChange,
+  hideLabel,
+  inputStyle,
 }: {
   label: string;
   value: number;
   onChange: (n: number) => void;
+  hideLabel?: boolean;
+  inputStyle?: StyleProp<TextStyle>;
 }) {
   const [draft, setDraft] = useState(String(value));
   React.useEffect(() => {
@@ -198,6 +217,8 @@ export function NumberField({
       label={label}
       value={draft}
       numeric
+      hideLabel={hideLabel}
+      inputStyle={inputStyle}
       onChange={(text) => {
         setDraft(text);
         if (/^\d+(?:[.,]\d+)?$/.test(text))

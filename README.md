@@ -22,7 +22,7 @@ Sans Supabase, l’application affiche l’écran de configuration. Pour essayer
 ## Fonctions
 
 - Modèles libres, exercices personnels, conventions de charge, échauffements et séries ajustables.
-- Validation en un appui, comparaison au même modèle et à la dernière réalisation d’un exercice, repos automatique désactivable, annulation et reprise de brouillon.
+- Un exercice à la fois, séries en grille compacte et flèches précédent/suivant pour alterner librement en superset. Validation en un appui, comparaison ciblée, repos fixe en bas de l’écran, annulation et reprise de brouillon.
 - Reprise des résultats ou progression douce / standard / soutenue, réglage global et exceptions par exercice. Les objectifs manqués sont reconduits ; toutes les séries au plafond proposent un incrément puis le bas de la fenêtre.
 - Tableau de bord, favoris, historique corrigeable, charge maximale, charge à répétitions fixes et 1RM estimé distinct.
 - Sauvegarde locale SQLite / IndexedDB, synchronisation versionnée, conflits explicites et conservation des brouillons de plusieurs appareils.
