@@ -1,0 +1,3 @@
+# Supabase et document privé versionné
+
+Supabase gère l’identité et PostgreSQL impose les invitations, votes et accès. Pour cette petite bêta, les données privées d’un membre sont un document versionné de 8 Mio maximum : un verrou et une révision attendue permettent les reprises idempotentes et empêchent les écrasements silencieux. Ce choix échange une synchronisation fine contre un contrat vérifiable ; les conflits sur un même élément demandent un choix explicite avec export des deux versions, tandis que les éléments absents sont réunis. Une croissance importante du volume ou des conflits justifiera une migration vers des révisions par entité.

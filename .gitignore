@@ -1,6 +1,13 @@
 node_modules/
 .expo/
 dist/
+dist-android/
+dist-ios/
+dist-*/
+test-results/
+playwright-report/
+supabase/.temp/
+supabase/.branches/
 web-build/
 coverage/
 .env

@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "MyWorkout",
+    "slug": "myworkout",
+    "scheme": "myworkout",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "android": { "package": "com.myworkout.app" },
+    "ios": { "bundleIdentifier": "com.myworkout.app", "supportsTablet": true },
+    "web": { "bundler": "metro", "output": "single" },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-notifications",
+      "expo-secure-store"
+    ]
+  }
+}
